@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
@@ -88,6 +88,47 @@
                 <input type="hidden" name="sort" id="sortBy" value="${not empty sortBy ? sortBy : 'newest'}">
             </div>
         </form>
+
+        <%-- ── DEAL HÔM NAY ── --%>
+        <c:if test="${not empty dailyDeal}">
+        <div class="daily-deal-banner" id="dailyDealBanner">
+            <div class="dd-left">
+                <div class="dd-badge">🔥 DEAL HÔM NAY</div>
+                <div class="dd-countdown-label">Kết thúc sau:</div>
+                <div class="dd-countdown" id="ddCountdown">
+                    <div class="dd-time-block"><span id="ddH">00</span><small>Giờ</small></div>
+                    <div class="dd-sep">:</div>
+                    <div class="dd-time-block"><span id="ddM">00</span><small>Phút</small></div>
+                    <div class="dd-sep">:</div>
+                    <div class="dd-time-block"><span id="ddS">00</span><small>Giây</small></div>
+                </div>
+            </div>
+            <a href="${pageContext.request.contextPath}/product/detail/${dailyDeal.productId}" class="dd-product">
+                <div class="dd-img-wrap">
+                    <c:set var="ddImg" value="${dailyDeal.imageUrl}"/>
+                    <c:if test="${not empty ddImg and not fn:startsWith(ddImg,'http')}">
+                        <c:set var="ddImg" value="${pageContext.request.contextPath}/${ddImg}"/>
+                    </c:if>
+                    <img src="${ddImg}" alt="${dailyDeal.name}"
+                         onerror="this.src='https://placehold.co/120x120/e8f5e9/2e7d32?text=🛒'">
+                </div>
+                <div class="dd-info">
+                    <span class="dd-cat">${dailyDeal.categoryName}</span>
+                    <p class="dd-name">${dailyDeal.name}</p>
+                    <div class="dd-price-row">
+                        <span class="dd-original-price">${dailyDeal.formattedOriginalPrice}</span>
+                        <span class="dd-discount-badge">-23%</span>
+                    </div>
+                    <p class="dd-price">${dailyDeal.formattedPrice}<span class="dd-unit"> / ${dailyDeal.unit}</span></p>
+                    <c:if test="${dailyDeal.reviewCount > 0}">
+                        <span class="dd-rating">⭐ ${dailyDeal.avgRating} (${dailyDeal.reviewCount} đánh giá)</span>
+                    </c:if>
+                    <span class="dd-cta">Xem ngay →</span>
+                </div>
+            </a>
+            <div class="dd-deco">🔥</div>
+        </div>
+        </c:if>
 
         <c:choose>
             <c:when test="${empty products}">
@@ -205,6 +246,32 @@ function setSort(val) {
     document.getElementById('sortBy').value = val;
     document.getElementById('filterForm').submit();
 }
+
+// ── Đồng hồ đếm ngược Deal hôm nay ──────────────────────────────────────────
+(function () {
+    const hEl = document.getElementById('ddH');
+    const mEl = document.getElementById('ddM');
+    const sEl = document.getElementById('ddS');
+    if (!hEl) return;
+
+    function tick() {
+        const now  = new Date();
+        const midnight = new Date(now);
+        midnight.setHours(24, 0, 0, 0);
+        let diff = Math.max(0, Math.floor((midnight - now) / 1000));
+
+        const h = Math.floor(diff / 3600);
+        diff -= h * 3600;
+        const m = Math.floor(diff / 60);
+        const s = diff - m * 60;
+
+        hEl.textContent = String(h).padStart(2, '0');
+        mEl.textContent = String(m).padStart(2, '0');
+        sEl.textContent = String(s).padStart(2, '0');
+    }
+    tick();
+    setInterval(tick, 1000);
+})();
 </script>
 </body>
 </html>

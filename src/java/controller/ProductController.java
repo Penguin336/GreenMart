@@ -118,9 +118,6 @@ public class ProductController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        requireAdmin(req, resp);
-        if (resp.isCommitted()) return;
-
         req.setCharacterEncoding("UTF-8");
         String action = req.getParameter("action");
 
@@ -145,6 +142,22 @@ public class ProductController extends HttpServlet {
                 reviewDAO.insert(r);
             }
             resp.sendRedirect(req.getContextPath() + "/product/detail/" + productId + "#reviews");
+            return;
+        }
+
+        requireAdmin(req, resp);
+        if (resp.isCommitted()) return;
+
+        // ── Đặt / bỏ Deal hôm nay ───────────────────────────────────────────
+        if ("setDeal".equals(action)) {
+            int pid = Integer.parseInt(req.getParameter("productId"));
+            productDAO.setDailyDeal(pid);
+            resp.sendRedirect(req.getContextPath() + "/product/admin/list");
+            return;
+        }
+        if ("clearDeal".equals(action)) {
+            productDAO.clearDailyDeal();
+            resp.sendRedirect(req.getContextPath() + "/product/admin/list");
             return;
         }
 

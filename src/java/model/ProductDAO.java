@@ -22,6 +22,7 @@ public class ProductDAO {
         p.setImageUrl(rs.getString("image_url"));
         p.setStock(rs.getInt("stock"));
         p.setActive(rs.getBoolean("is_active"));
+        try { p.setDailyDeal(rs.getBoolean("is_daily_deal")); } catch (SQLException ignored) {}
         try { p.setCategoryName(rs.getString("category_name")); } catch (SQLException ignored) {}
         // sold_count và rating (có thể null nếu query không join)
         try { p.setSoldCount(rs.getInt("sold_count")); }       catch (SQLException ignored) {}
@@ -224,6 +225,69 @@ public class ProductDAO {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    /**
+     * Deal hôm nay:
+     * - Ưu tiên sản phẩm admin đã tick is_daily_deal = 1.
+     * - Nếu không có thì dùng seed theo ngày (auto đổi mỗi ngày).
+     */
+    public Product getDailyDeal() {
+        // 1. Kiểm tra xem admin có chọn sản phẩm deal không
+        String flagSql = SELECT_BASE + "AND p.is_daily_deal = 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(flagSql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return map(rs);  // trả về sản phẩm admin chọn
+        } catch (SQLException e) { e.printStackTrace(); }
+
+        // 2. Fallback: seed theo ngày
+        String countSql = "SELECT COUNT(*) FROM Product WHERE is_active = 1";
+        int total = 0;
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(countSql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) total = rs.getInt(1);
+        } catch (SQLException e) { e.printStackTrace(); }
+        if (total == 0) return null;
+
+        long daysSinceEpoch = java.time.LocalDate.now().toEpochDay();
+        int offset = (int) (daysSinceEpoch % total);
+        String sql = SELECT_BASE + "ORDER BY p.product_id ASC OFFSET ? ROWS FETCH NEXT 1 ROWS ONLY";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, offset);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return map(rs);
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return null;
+    }
+
+    /** Admin đặt sản phẩm làm Deal hôm nay (bỏ chọn tất cả các sản phẩm khác trước). */
+    public void setDailyDeal(int productId) {
+        String clear  = "UPDATE Product SET is_daily_deal = 0 WHERE is_daily_deal = 1";
+        String setDeal = "UPDATE Product SET is_daily_deal = 1 WHERE product_id = ?";
+        try (Connection conn = DBContext.getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement ps1 = conn.prepareStatement(clear)) {
+                ps1.executeUpdate();
+            }
+            try (PreparedStatement ps2 = conn.prepareStatement(setDeal)) {
+                ps2.setInt(1, productId);
+                ps2.executeUpdate();
+            }
+            conn.commit();
+        } catch (SQLException e) { e.printStackTrace(); }
+    }
+
+    /** Admin bỏ chọn deal thủ công → quay về chế độ tự động theo ngày. */
+    public void clearDailyDeal() {
+        String sql = "UPDATE Product SET is_daily_deal = 0 WHERE is_daily_deal = 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.executeUpdate();
+        } catch (SQLException e) { e.printStackTrace(); }
     }
 
     public Product getById(int id) {

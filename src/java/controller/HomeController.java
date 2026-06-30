@@ -55,9 +55,11 @@ public class HomeController extends HttpServlet {
         int offset = (currentPage - 1) * PAGE_SIZE;
         List<Product>  products   = productDAO.getPage(categoryId, keyword, minPrice, maxPrice, sortBy, offset, PAGE_SIZE);
         List<Category> categories = categoryDAO.getAllActive();
+        Product        dailyDeal  = productDAO.getDailyDeal();
 
         req.setAttribute("products",     products);
         req.setAttribute("categories",   categories);
+        req.setAttribute("dailyDeal",    dailyDeal);
         req.setAttribute("keyword",      keyword);
         req.setAttribute("categoryId",   categoryId);
         req.setAttribute("sortBy",       sortBy);
