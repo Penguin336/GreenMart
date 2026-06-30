@@ -30,6 +30,7 @@ img  { max-width: 100%; object-fit: contain; }
 /* ─── NAVBAR ────────────────────────────────────────── */
 .navbar {
     background: linear-gradient(90deg, #1b4d1f 0%, #2e7d32 50%, #1b4d1f 100%);
+    
     color: var(--white);
     padding: 0;
     position: sticky; top: 0; z-index: 100;
@@ -98,7 +99,7 @@ img  { max-width: 100%; object-fit: contain; }
     border-radius: 28px;
     font-size: .9rem; outline: none;
     background: rgba(255,255,255,.1);
-    color: var(--white);
+    color: white;
     backdrop-filter: blur(6px);
     transition: all .25s;
 }
