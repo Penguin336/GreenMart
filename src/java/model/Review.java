@@ -1,16 +1,16 @@
 package com.greenmart.model;
 
-import java.sql.Timestamp;
+import java.util.Date;
 
 public class Review {
 
-    private int       reviewId;
-    private int       productId;
-    private int       userId;
-    private String    userFullName;   // JOIN từ Users
-    private int       stars;          // 1-5
-    private String    comment;
-    private Timestamp createdAt;
+    private int    reviewId;
+    private int    productId;
+    private int    userId;
+    private String userFullName;   // JOIN từ Users
+    private int    stars;          // 1-5
+    private String comment;
+    private Date   createdAt;      // dùng java.util.Date để fmt:formatDate hoạt động
 
     public Review() {}
 
@@ -32,8 +32,8 @@ public class Review {
     public String getComment()          { return comment; }
     public void setComment(String v)    { this.comment = v; }
 
-    public Timestamp getCreatedAt()     { return createdAt; }
-    public void setCreatedAt(Timestamp v){ this.createdAt = v; }
+    public Date getCreatedAt()          { return createdAt; }
+    public void setCreatedAt(Date v)    { this.createdAt = v; }
 
     /** Trả về chuỗi sao, vd: "⭐⭐⭐⭐☆" */
     public String getStarDisplay() {

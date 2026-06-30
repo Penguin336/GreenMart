@@ -163,8 +163,19 @@
                             <tr>
                                 <td>
                                     <div class="admin-product-thumb">
-                                        <img src="${d.productImage}"
-                                             onerror="this.src='https://placehold.co/44x44/e8f5e9/2e7d32?text=...'">
+                                        <c:choose>
+                                            <c:when test="${empty d.productImage}">
+                                                <img src="https://placehold.co/44x44/e8f5e9/2e7d32?text=...">
+                                            </c:when>
+                                            <c:when test="${fn:startsWith(d.productImage,'http')}">
+                                                <img src="${d.productImage}"
+                                                     onerror="this.src='https://placehold.co/44x44/e8f5e9/2e7d32?text=...'">
+                                            </c:when>
+                                            <c:otherwise>
+                                                <img src="${pageContext.request.contextPath}/${d.productImage}"
+                                                     onerror="this.src='https://placehold.co/44x44/e8f5e9/2e7d32?text=...'">
+                                            </c:otherwise>
+                                        </c:choose>
                                         <span class="admin-product-name">${d.productName}</span>
                                     </div>
                                 </td>

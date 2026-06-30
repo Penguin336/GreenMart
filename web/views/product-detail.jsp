@@ -104,6 +104,11 @@
                     <a href="${pageContext.request.contextPath}/auth/login">Đăng nhập</a> để gửi đánh giá.
                 </div>
             </c:when>
+            <c:when test="${not hasPurchased}">
+                <div class="review-not-purchased">
+                    🛒 Bạn cần <strong>mua và nhận hàng thành công</strong> sản phẩm này mới có thể đánh giá.
+                </div>
+            </c:when>
             <c:when test="${hasReviewed}">
                 <div class="review-already">✅ Bạn đã đánh giá sản phẩm này.</div>
             </c:when>
@@ -182,6 +187,8 @@
                    font-weight:700; transition:background .2s; }
     .btn-big:hover { background:var(--green-dark); }
 
+    .review-not-purchased { background:#fff8e1; border:1.5px solid #ffe082; border-radius:10px;
+                            padding:14px 18px; color:#795548; font-size:.93rem; margin-bottom:20px; }
     .detail-rating-row { display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
     .detail-avg        { font-weight:700; color:#f57f17; font-size:1.05rem; }
     .detail-review-cnt { font-size:.83rem; color:var(--text-muted); }

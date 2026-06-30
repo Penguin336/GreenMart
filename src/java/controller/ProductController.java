@@ -1,6 +1,7 @@
 package com.greenmart.controller;
 
 import com.greenmart.model.CategoryDAO;
+import com.greenmart.model.OrderDAO;
 import com.greenmart.model.ProductDAO;
 import com.greenmart.model.ReviewDAO;
 import com.greenmart.model.Review;
@@ -39,6 +40,7 @@ public class ProductController extends HttpServlet {
     private final ProductDAO  productDAO  = new ProductDAO();
     private final CategoryDAO categoryDAO = new CategoryDAO();
     private final ReviewDAO   reviewDAO   = new ReviewDAO();
+    private final OrderDAO    orderDAO    = new OrderDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -52,15 +54,19 @@ public class ProductController extends HttpServlet {
                 if (p == null) { resp.sendError(404); return; }
 
                 List<Review> reviews = reviewDAO.getByProduct(id);
-                boolean hasReviewed  = false;
+                boolean hasReviewed   = false;
+                boolean hasPurchased  = false;
                 HttpSession sess = req.getSession(false);
                 if (sess != null && sess.getAttribute("user") != null) {
-                    hasReviewed = reviewDAO.hasReviewed(id, ((User) sess.getAttribute("user")).getUserId());
+                    int uid = ((User) sess.getAttribute("user")).getUserId();
+                    hasReviewed  = reviewDAO.hasReviewed(id, uid);
+                    hasPurchased = orderDAO.hasPurchased(id, uid);
                 }
 
-                req.setAttribute("product",     p);
-                req.setAttribute("reviews",     reviews);
-                req.setAttribute("hasReviewed", hasReviewed);
+                req.setAttribute("product",      p);
+                req.setAttribute("reviews",      reviews);
+                req.setAttribute("hasReviewed",  hasReviewed);
+                req.setAttribute("hasPurchased", hasPurchased);
                 req.getRequestDispatcher("/views/product-detail.jsp").forward(req, resp);
             } catch (NumberFormatException e) {
                 resp.sendError(400);
@@ -118,13 +124,10 @@ public class ProductController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        requireAdmin(req, resp);
-        if (resp.isCommitted()) return;
-
         req.setCharacterEncoding("UTF-8");
         String action = req.getParameter("action");
 
-        // ── Xử lý đánh giá sản phẩm ────────────────────────────────────────
+        // ── Xử lý đánh giá sản phẩm (không yêu cầu admin) ─────────────────
         if ("review".equals(action)) {
             HttpSession sess = req.getSession(false);
             if (sess == null || sess.getAttribute("user") == null) {
@@ -133,10 +136,17 @@ public class ProductController extends HttpServlet {
             }
             User user = (User) sess.getAttribute("user");
             int productId = Integer.parseInt(req.getParameter("productId"));
-            int stars = Integer.parseInt(req.getParameter("stars"));
-            String comment = req.getParameter("comment");
 
+            // Chỉ cho phép nếu đã mua sản phẩm này (đơn delivered)
+            if (!orderDAO.hasPurchased(productId, user.getUserId())) {
+                resp.sendRedirect(req.getContextPath() + "/product/detail/" + productId + "#reviews");
+                return;
+            }
+
+            // Chưa đánh giá thì mới cho thêm
             if (!reviewDAO.hasReviewed(productId, user.getUserId())) {
+                int stars = Integer.parseInt(req.getParameter("stars"));
+                String comment = req.getParameter("comment");
                 Review r = new Review();
                 r.setProductId(productId);
                 r.setUserId(user.getUserId());
@@ -147,6 +157,10 @@ public class ProductController extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/product/detail/" + productId + "#reviews");
             return;
         }
+
+        // Các action còn lại (add, edit, delete) chỉ dành cho admin
+        requireAdmin(req, resp);
+        if (resp.isCommitted()) return;
 
         if ("add".equals(action) || "edit".equals(action)) {            Product p = new Product();
             String idParam = req.getParameter("productId");

@@ -98,7 +98,7 @@ img  { max-width: 100%; object-fit: contain; }
     border-radius: 28px;
     font-size: .9rem; outline: none;
     background: rgba(255,255,255,.1);
-    color: var(--white);
+    color: red;
     backdrop-filter: blur(6px);
     transition: all .25s;
 }

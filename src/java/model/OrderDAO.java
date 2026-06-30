@@ -154,6 +154,27 @@ public class OrderDAO {
         return 0;
     }
 
+    /**
+     * Kiểm tra user đã mua (đơn hàng đã giao) sản phẩm này chưa.
+     * Chỉ đơn có status = 'delivered' mới được tính.
+     */
+    public boolean hasPurchased(int productId, int userId) {
+        String sql = "SELECT 1 FROM Orders o "
+                   + "JOIN OrderDetail od ON o.order_id = od.order_id "
+                   + "WHERE o.user_id = ? AND od.product_id = ? AND o.status = 'delivered'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setInt(2, productId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public boolean updateStatus(int orderId, String status) {
         String sql = "UPDATE Orders SET status=? WHERE order_id=?";
         try (Connection conn = DBContext.getConnection();
