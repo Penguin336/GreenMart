@@ -14,6 +14,7 @@ public class Product {
     private String     imageUrl;
     private int        stock;
     private boolean    isActive;
+    private boolean    isDailyDeal;  // admin có thể đánh dấu là deal hôm nay
     private int        soldCount;    // tổng đã bán (từ sold_count hoặc tính từ OrderDetail)
     private double     avgRating;   // điểm trung bình đánh giá
     private int        reviewCount; // số lượt đánh giá
@@ -102,6 +103,9 @@ public class Product {
         this.isActive = a;
     }
 
+    public boolean isDailyDeal()           { return isDailyDeal; }
+    public void setDailyDeal(boolean v)    { this.isDailyDeal = v; }
+
     public int getSoldCount()             { return soldCount; }
     public void setSoldCount(int v)       { this.soldCount = v; }
 
@@ -128,5 +132,22 @@ public class Product {
             return "0đ";
         }
         return String.format("%,.0f", price).replace(",", ".") + "đ";
+    }
+
+    /**
+     * Giá gốc giả lập cho Deal hôm nay: tăng 30% so với giá hiện tại.
+     * Làm tròn đến 1000đ cho trông tự nhiên hơn.
+     */
+    public java.math.BigDecimal getOriginalPrice() {
+        if (price == null) return java.math.BigDecimal.ZERO;
+        long raw = price.multiply(new java.math.BigDecimal("1.30")).longValue();
+        // Làm tròn lên đến 1000đ gần nhất
+        long rounded = ((raw + 999) / 1000) * 1000;
+        return new java.math.BigDecimal(rounded);
+    }
+
+    public String getFormattedOriginalPrice() {
+        java.math.BigDecimal op = getOriginalPrice();
+        return String.format("%,.0f", op).replace(",", ".") + "đ";
     }
 }

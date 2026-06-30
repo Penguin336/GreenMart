@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c"  uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
@@ -93,6 +93,7 @@
                             <th>Danh mục</th>
                             <th>Giá</th>
                             <th>Tồn kho</th>
+                            <th>Deal 🔥</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -132,6 +133,32 @@
                                         color:${p.stock > 10 ? '#2e7d32' : p.stock > 0 ? '#f57f17' : '#c62828'}">
                                         ${p.stock}
                                     </span>
+                                </td>
+                                <td>
+                                    <c:choose>
+                                        <c:when test="${p.dailyDeal}">
+                                            <%-- Đang là deal: nút bỏ chọn --%>
+                                            <form method="post"
+                                                  action="${pageContext.request.contextPath}/product/admin/list"
+                                                  style="display:inline">
+                                                <input type="hidden" name="action"    value="clearDeal">
+                                                <input type="hidden" name="productId" value="${p.productId}">
+                                                <button type="submit" title="Đang là deal hôm nay. Bấm để bỏ."
+                                                        style="border:none;background:none;cursor:pointer;font-size:1.3rem">🔥</button>
+                                            </form>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <%-- Chưa là deal: nút đặt làm deal --%>
+                                            <form method="post"
+                                                  action="${pageContext.request.contextPath}/product/admin/list"
+                                                  style="display:inline">
+                                                <input type="hidden" name="action"    value="setDeal">
+                                                <input type="hidden" name="productId" value="${p.productId}">
+                                                <button type="submit" title="Đặt làm Deal hôm nay"
+                                                        style="border:none;background:none;cursor:pointer;font-size:1.3rem;opacity:.25">🔥</button>
+                                            </form>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </td>
                                 <td>
                                     <div style="display:flex;gap:6px">

@@ -1,11 +1,11 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c"  uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <nav class="navbar">
     <div class="container navbar-inner">
 
         <!-- ── TRÁI: Logo + Brand ── -->
-        <a class="brand" href="${pageContext.request.contextPath}/home">
+        <a class="brand" href="${pageContext.request.contextPath}/landing">
             <span class="brand-logo">🌿</span>
             <span class="brand-text">
                 <span class="brand-name"><span>Green</span> Mart</span>

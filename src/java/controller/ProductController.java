@@ -158,10 +158,29 @@ public class ProductController extends HttpServlet {
             return;
         }
 
+<<<<<<< HEAD
         // Các action còn lại (add, edit, delete) chỉ dành cho admin
         requireAdmin(req, resp);
         if (resp.isCommitted()) return;
 
+=======
+        requireAdmin(req, resp);
+        if (resp.isCommitted()) return;
+
+        // ── Đặt / bỏ Deal hôm nay ───────────────────────────────────────────
+        if ("setDeal".equals(action)) {
+            int pid = Integer.parseInt(req.getParameter("productId"));
+            productDAO.setDailyDeal(pid);
+            resp.sendRedirect(req.getContextPath() + "/product/admin/list");
+            return;
+        }
+        if ("clearDeal".equals(action)) {
+            productDAO.clearDailyDeal();
+            resp.sendRedirect(req.getContextPath() + "/product/admin/list");
+            return;
+        }
+
+>>>>>>> a5606452b4a92ffcabe79367e251d39fcd978679
         if ("add".equals(action) || "edit".equals(action)) {            Product p = new Product();
             String idParam = req.getParameter("productId");
             if (idParam != null && !idParam.isBlank())
